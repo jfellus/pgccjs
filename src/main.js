@@ -4,6 +4,11 @@ const DBG = utils.DBG;
 
 
 var s = new Script("./test.script");
+s.on('loaded', function(nbErrors) {
+  DBG(s);
+  console.log("Loaded with " + nbErrors + " errors");
 
-
-DBG(s);
+  s.write('./out.script').then(function() {
+    DBG('Written to out.script');
+  })
+});

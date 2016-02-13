@@ -4,13 +4,17 @@ Include pg_basics
 Include pg_gtk
 
 [Modules]
-Prout zib +debug  release
-@x = 140
-@y = 131
-mou = Mi
-mar = mor
-car = minet
-noub = robinet
+Camera cam +zob -zib
+ka = va
+kb = vb
+kc = kb + ka
+PTCG ptcg
+radius = 10.0
+john = jimmy
 
 
 [Links]
+cam.a -> ptcg.b
+type = async
+ptcg -> zob
+type = sync

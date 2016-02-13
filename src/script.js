@@ -1,8 +1,10 @@
 const ScriptReader = require("./script_reader");
+const ScriptWriter = require("./script_writer");
 const Module = require("./module");
 const Link = require("./link");
 const DBG = require("./utils").DBG;
-
+const EventEmitter = require('events').EventEmitter;
+const util = require('util');
 
 var SCRIPT = null;
 
@@ -13,9 +15,14 @@ function Script(filename) {
 
 	if(filename) this.read(filename);
 }
+util.inherits(Script, EventEmitter);
 
 Script.prototype.read = function(filename) {
-	return new ScriptReader(this).read(filename);
+	var that = this;
+	var sr = new ScriptReader(this);
+	return sr.read(filename).then(function(){
+		that.emit("loaded", sr.errors);
+	});
 }
 
 Script.prototype.write = function(filename) {
@@ -53,8 +60,8 @@ Script.prototype.addLink = function(link) {
 	this.links.push(link);
 };
 
-Script.prototype.getModule = function(name) {
-	var m = this.modules.filter(function(m) { return m.name === name; });
+Script.prototype.getModule = function(id) {
+	var m = this.modules.filter(function(m) { return m.id === id; });
 	return m ? m[0] : null;
 };
 

@@ -10,7 +10,7 @@ String.prototype.before = function(str) {
 String.prototype.after = function(str) {
   var i = this.indexOf(str);
   if(i===-1) return this;
-  return this.substr(i, this.length);
+  return this.substr(i+str.length, this.length);
 }
 
 
