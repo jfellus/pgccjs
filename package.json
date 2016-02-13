@@ -1,0 +1,11 @@
+{
+  "name": "pgcc",
+  "description": "Processing Graph to C Compiler",
+  "author": "Jerome Fellus <jfellus@gmail.com>",
+  "version": "0.1.0",
+  "dependencies": {
+    "q": "*"
+  },
+  "main": "src/main.js",
+  "license": "MIT"
+}
