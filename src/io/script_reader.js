@@ -1,9 +1,9 @@
 const readline = require('readline');
 const fs = require('fs');
-const Script = require('./script');
-const Module = require('./module');
-const Link = require('./link');
-const DBG = require("./utils").DBG;
+const Script = require('../model/script');
+const Module = require('../model/module');
+const Link = require('../model/link');
+const DBG = require("../utils/utils").DBG;
 const Q = require("q");
 
 function ScriptReader(script) {
@@ -39,11 +39,11 @@ ScriptReader.prototype.parseStatement = function(statement) {
     var v = statement.after("=").trim();
     if(!this.section) return script.declare(k,v);
     else if(this.section === '[modules]') {
-      if(!this.module) return console.warn("Warning : ignoring statement " + statement);
+      if(!this.module) throw "Warning : ignoring statement '" + statement + "'";
       return this.module.set(k,v);
     }
     else if(this.section === '[links]') {
-      if(!this.link) return console.warn("Warning : ignoring statement " + statement);
+      if(!this.link) throw "Warning : ignoring statement '" + statement + "'";
       return this.link.set(k,v);
     }
   } else if(statement.indexOf("->") !== -1){
@@ -57,8 +57,8 @@ ScriptReader.prototype.parseStatement = function(statement) {
     var dstPin = _dst.split('.')[1];
     var src = this.script.getModule(srcName);
     var dst = this.script.getModule(dstName);
-    if(!src) throw 'No such src module : ' + srcName + " in " + statement;
-    if(!dst) throw 'No such dst module : ' + dstName + " in " + statement;
+    if(!src) throw 'No such src module \'' + srcName + "' in '" + statement + "'";
+    if(!dst) throw 'No such dst module \'' + dstName + "' in '" + statement + "'";
     if(this.section === '[links]') {
       this.link = new Link(src, dst);
       this.link.srcPin = srcPin;
@@ -80,7 +80,7 @@ ScriptReader.prototype.parseStatement = function(statement) {
     }
   }
 
-  throw "Bad statement : " + statement;
+  throw "Bad statement : '" + statement + "'";
 }
 
 

@@ -1,10 +1,11 @@
-const ScriptReader = require("./script_reader");
-const ScriptWriter = require("./script_writer");
+const ScriptReader = require("../io/script_reader");
+const ScriptWriter = require("../io/script_writer");
 const Module = require("./module");
 const Link = require("./link");
-const DBG = require("./utils").DBG;
+const DBG = require("../utils/utils").DBG;
 const EventEmitter = require('events').EventEmitter;
 const util = require('util');
+const Process = require("./process");
 
 var SCRIPT = null;
 
@@ -12,6 +13,7 @@ function Script(filename) {
 	this.modules = [];
 	this.links = [];
 	this.includes = [];
+	this.processes = [];
 
 	if(filename) this.read(filename);
 }
@@ -37,9 +39,20 @@ Script.prototype.computeConnectedComponents = function() {
 		});
 	});
 	this.getLeafModules().forEach(function(m, i) {
-		that.scan(m, function(l) {
+		that.reverseScan(m, function(l) {
 			if(l.dst) l.src.connectedComponent = l.dst.connectedComponent;
 		});
+	});
+}
+
+Script.prototype.computeProcesses = function() {
+	var that = this;
+	if(!this.processes || this.processes.length) this.processes = [];
+	this.computeConnectedComponents();
+
+	this.modules.forEach(function(m) {
+		while(that.processes.length < m.connectedComponent + 1 ) that.processes.push(new Process(that, that.processes.length));
+		that.processes[m.connectedComponent].addModule(m);
 	});
 }
 
@@ -62,7 +75,7 @@ Script.prototype.addLink = function(link) {
 
 Script.prototype.getModule = function(id) {
 	var m = this.modules.filter(function(m) { return m.id === id; });
-	return m ? m[0] : null;
+	return m.length>=1 ? m[0] : null;
 };
 
 Script.prototype.scan = function(startModules, callback) {
@@ -70,7 +83,7 @@ Script.prototype.scan = function(startModules, callback) {
 	if(!fifo.push) fifo = [startModules];
 
 	while(fifo.length) {
-		var l = fifo.splice(0,1,0);
+		var l = fifo.splice(0,1)[0];
 		var m = l.dst ? l.dst : l;
 		if(!l.dst) l = {dst:m};
 
@@ -84,7 +97,7 @@ Script.prototype.reverseScan = function(startModules, callback) {
 	if(!fifo.push) fifo = [startModules];
 
 	while(fifo.length) {
-		var l = fifo.splice(0,1,0);
+		var l = fifo.splice(0,1)[0];
 		var m = l.src ? l.src : l;
 		if(!l.src) l = {src:m};
 
@@ -94,7 +107,7 @@ Script.prototype.reverseScan = function(startModules, callback) {
 };
 
 Script.prototype.scanAll = function(callback) {
-	return this.scan(getSourceModules(), callback);
+	return this.scan(this.getSourceModules(), callback);
 };
 
 Script.prototype.getSourceModules = function() {

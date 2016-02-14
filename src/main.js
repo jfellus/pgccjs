@@ -1,14 +1,16 @@
-const utils = require("./utils");
-var Script = require("./script");
+const utils = require("./utils/utils");
+var Script = require("./model/script");
+var CPPWriter = require("./io/cpp_writer");
 const DBG = utils.DBG;
 
 
 var s = new Script("./test.script");
 s.on('loaded', function(nbErrors) {
-  DBG(s);
-  console.log("Loaded with " + nbErrors + " errors");
+  console.log("Script " + s.name + " loaded with " + nbErrors + " errors");
+  try { s.computeProcesses(); } catch(e) {console.error(e.stack);}
 
   s.write('./out.script').then(function() {
-    DBG('Written to out.script');
-  })
+    console.log('Script ' + s.name + ' written to out.script');
+    new CPPWriter(s).write("out");
+  });
 });

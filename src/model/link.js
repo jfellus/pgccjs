@@ -32,5 +32,13 @@ Link.prototype.reattach = function() {
 	this.script.addLink(this);
 };
 
+Link.prototype.needsRead = function() {
+	return false; // TODO
+};
+
+Link.prototype.needsWrite = function() {
+	return false; // TODO
+};
+
 
 module.exports = Link;

@@ -1,8 +1,8 @@
 const fs = require('fs');
-const Script = require('./script');
-const Module = require('./module');
-const Link = require('./link');
-const DBG = require("./utils").DBG;
+const Script = require('../model/script');
+const Module = require('../model/module');
+const Link = require('../model/link');
+const DBG = require("../utils/utils").DBG;
 const Q = require("q");
 
 
@@ -18,7 +18,7 @@ ScriptWriter.prototype.write = function(filename) {
     var promise = Q();
 
     function W(str) {
-      DBG(str);
+      if(!str) str = "";
       promise = promise.then(function(){
         var defered = Q.defer();
         fs.write( file, str + "\n", null, 'utf8', function(){ return defered.resolve();  });
@@ -42,6 +42,7 @@ ScriptWriter.prototype.write = function(filename) {
     that.script.includes.forEach(function(i) {
       W("Include " + i);
     });
+    W("\n");
 
     // Modules section
     W('[Modules]');
@@ -51,7 +52,9 @@ ScriptWriter.prototype.write = function(filename) {
         if(p==='options') continue;
         W(p + " = " + m.params[p]);
       }
+      W();
     });
+    W("\n");
 
     // Links section
     W('[Links]');
@@ -65,6 +68,7 @@ ScriptWriter.prototype.write = function(filename) {
         if(p==='options') continue;
         W(p + " = " + l.params[p]);
       }
+      W();
     });
 
     END();
