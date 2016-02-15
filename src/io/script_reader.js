@@ -63,7 +63,7 @@ ScriptReader.prototype.parseStatement = function(statement) {
       this.link = new Link(src, dst);
       this.link.srcPin = srcPin;
       this.link.dstPin = dstPin;
-      this.link.set("options", vs.slice(1));
+      this.link.options = vs.slice(1);
       return this.link;
     }
   } else {
@@ -75,7 +75,7 @@ ScriptReader.prototype.parseStatement = function(statement) {
       if(!this.module) this.module = new Module(this.script);
       this.module.class = k;
       this.module.id = v;
-      this.module.set("options", statement.split(" ").slice(2));
+      this.module.options = statement.split(" ").slice(2);
       return this.module;
     }
   }

@@ -1,5 +1,6 @@
 const util = require("util");
-
+const fs = require("fs");
+const Q = require("q");
 
 String.prototype.before = function(str) {
   var i = this.indexOf(str);
@@ -65,10 +66,43 @@ Array.prototype.remove = function(o) {
 }
 
 
+
 utils = {};
 
 utils.DBG = function(x) {
 	console.log(util.inspect(x, {depth:2}));
 };
+
+utils.cp = function(source, target) {
+	var defered = Q.defer();
+    var rd = fs.createReadStream(source);
+    rd.on('error', defered.reject);
+    var wr = fs.createWriteStream(target);
+    wr.on('error', defered.reject);
+    wr.on('finish', defered.resolve);
+    rd.pipe(wr);
+    return defered.promise;
+}
+
+
+
+
+process.on('uncaughtException', function(err){
+	var msg;
+	if (err.stack) msg = err.stack;
+	else msg = "Message: " + err.message;
+	console.error(msg);
+});
+
+// unhandled rejection due to non-catch exception, error or reject in promise/event
+process.on('unhandledRejection', function(err, p) {
+	var msg;
+	if (err && err.stack) msg = err.stack;
+	else if(err && err.message) msg = "Message: " + require('util').inspect(err.message);
+	console.error(msg);
+});
+
+
+
 
 module.exports = utils;

@@ -106,9 +106,55 @@ Script.prototype.reverseScan = function(startModules, filter, callback) {
 	}
 };
 
+Script.prototype.scanOnce = function(startModules, filter, callback) {
+	this.modules.forEach(function(m) { m._toScan = true; });
+
+	var fifo = startModules;
+	if(!fifo.push) fifo = [startModules];
+
+	while(fifo.length) {
+		var l = fifo.splice(0,1)[0];
+		var m = l.dst ? l.dst : l;
+		if(!l.dst) l = {dst:m};
+
+		m.outs.forEach(function(l) {if(!filter || filter(l)) fifo.push(l);});
+		if(l.dst._toScan) { callback(l); delete l.dst._toScan; }
+	}
+};
+
+Script.prototype.reverseScanOnce = function(startModules, filter, callback) {
+	this.modules.forEach(function(m) { m._toScan = true; });
+
+	var fifo = startModules;
+	if(!fifo.push) fifo = [startModules];
+
+	while(fifo.length) {
+		var l = fifo.splice(0,1)[0];
+		var m = l.src ? l.src : l;
+		if(!l.src) l = {src:m};
+
+		m.ins.forEach(function(l) {if(!filter || filter(l)) fifo.push(l);});
+		if(l.src._toScan) { callback(l); delete l.src._toScan; }
+	}
+};
+
+
 Script.prototype.scanAll = function(filter, callback) {
 	return this.scan(this.getSourceModules(), filter, callback);
 };
+
+Script.prototype.reverseScanAll = function(filter, callback) {
+	return this.scan(this.getLeafModules(), filter, callback);
+};
+
+Script.prototype.scanAllOnce = function(filter, callback) {
+	return this.scan(this.getSourceModules(), filter, callback);
+};
+
+Script.prototype.reverseScanAllOnce = function(filter, callback) {
+	return this.reverseScanOnce(this.getLeafModules(), filter, callback);
+};
+
 
 Script.prototype.getSourceModules = function() {
 	var sm = [];

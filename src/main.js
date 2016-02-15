@@ -1,7 +1,10 @@
 const utils = require("./utils/utils");
 var Script = require("./model/script");
-var CPPWriter = require("./io/cpp_writer");
+var Compiler = require("./compiler");
 const DBG = utils.DBG;
+
+
+process.title = 'pgcc';
 
 
 var s = new Script("./test.script");
@@ -11,6 +14,6 @@ s.on('loaded', function(nbErrors) {
 
   s.write('./out.script').then(function() {
     console.log('Script ' + s.name + ' written to out.script');
-    new CPPWriter(s).write("out");
+    try {new Compiler().compile(s, "out"); } catch(e) { console.error(e.stack); }
   });
 });

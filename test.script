@@ -5,18 +5,19 @@ Include pg_gtk
 
 [Modules]
 Camera cam +zob -zib
-ka = va
-kb = vb
-kc = kb + ka
+ka = "va"
+kb = "vb"
+kc = "kb + ka"
 PTCG ptcg
 radius = 10.0
-john = jimmy
+john = "jimmy"
 Zib zob
 Solo solo
 Duo duo
 
 [Links]
 cam.a -> ptcg.b
+cam.c -> zob
 type = async
 ptcg -> zob
 type = sync
