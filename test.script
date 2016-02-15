@@ -11,10 +11,13 @@ kc = kb + ka
 PTCG ptcg
 radius = 10.0
 john = jimmy
-
+Zib zob
+Solo solo
+Duo duo
 
 [Links]
 cam.a -> ptcg.b
 type = async
 ptcg -> zob
 type = sync
+solo -> duo

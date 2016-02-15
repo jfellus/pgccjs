@@ -34,12 +34,12 @@ Script.prototype.write = function(filename) {
 Script.prototype.computeConnectedComponents = function() {
 	var that = this;
 	this.getSourceModules().forEach(function(m, i) {
-		that.scan(m, function(l) {
+		that.scan(m, function(l) { return l.isProcedural(); }, function(l) {
 			l.dst.connectedComponent = l.src ? l.src.connectedComponent : i;
 		});
 	});
 	this.getLeafModules().forEach(function(m, i) {
-		that.reverseScan(m, function(l) {
+		that.reverseScan(m, function(l) { return l.isProcedural(); }, function(l) {
 			if(l.dst) l.src.connectedComponent = l.dst.connectedComponent;
 		});
 	});
@@ -78,7 +78,7 @@ Script.prototype.getModule = function(id) {
 	return m.length>=1 ? m[0] : null;
 };
 
-Script.prototype.scan = function(startModules, callback) {
+Script.prototype.scan = function(startModules, filter, callback) {
 	var fifo = startModules;
 	if(!fifo.push) fifo = [startModules];
 
@@ -87,12 +87,12 @@ Script.prototype.scan = function(startModules, callback) {
 		var m = l.dst ? l.dst : l;
 		if(!l.dst) l = {dst:m};
 
-		m.outs.forEach(function(l) {fifo.push(l);});
+		m.outs.forEach(function(l) {if(!filter || filter(l)) fifo.push(l);});
 		callback(l);
 	}
 };
 
-Script.prototype.reverseScan = function(startModules, callback) {
+Script.prototype.reverseScan = function(startModules, filter, callback) {
 	var fifo = startModules;
 	if(!fifo.push) fifo = [startModules];
 
@@ -101,13 +101,13 @@ Script.prototype.reverseScan = function(startModules, callback) {
 		var m = l.src ? l.src : l;
 		if(!l.src) l = {src:m};
 
-		m.ins.forEach(function(l) {fifo.push(l);});
+		m.ins.forEach(function(l) {if(!filter || filter(l)) fifo.push(l);});
 		callback(l);
 	}
 };
 
-Script.prototype.scanAll = function(callback) {
-	return this.scan(this.getSourceModules(), callback);
+Script.prototype.scanAll = function(filter, callback) {
+	return this.scan(this.getSourceModules(), filter, callback);
 };
 
 Script.prototype.getSourceModules = function() {

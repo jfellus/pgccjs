@@ -70,21 +70,21 @@ CPPWriter.prototype.writeProcess = function(proc, filename) {
     W();
 
     FUNCTION("void", "init", []);
-    proc.scanAll(function(l) {
+    proc.scanAll(function(l){return l.isProcedural();}, function(l) {
       CALL(l.dst.id + ".init", []);
     });
     END();
     W();
 
     FUNCTION("void", "deinit", []);
-    proc.scanAll(function(l) {
+    proc.scanAll(function(l){return l.isProcedural();}, function(l) {
       CALL(l.dst.id + ".deinit", []);
     });
     END();
     W();
 
     FUNCTION("void", "process", []);
-    proc.scanAll(function(l) {
+    proc.scanAll(function(l){return l.isProcedural();}, function(l) {
       MODULE_CALL(l.dst);
     });
     END();

@@ -20,7 +20,7 @@ Process.prototype.getModule = function(id) {
 	return m ? m[0] : null;
 };
 
-Process.prototype.scan = function(startModules, callback) {
+Process.prototype.scan = function(startModules, filter, callback) {
 	var fifo = startModules;
 	if(!fifo.push) fifo = [startModules];
 
@@ -29,12 +29,12 @@ Process.prototype.scan = function(startModules, callback) {
 		var m = l.dst ? l.dst : l;
 		if(!l.dst) l = {dst:m};
 
-		m.outs.forEach(function(l) {fifo.push(l);});
+		m.outs.forEach(function(l) {if(!filter || filter(l)) fifo.push(l);});
 		callback(l);
 	}
 };
 
-Process.prototype.reverseScan = function(startModules, callback) {
+Process.prototype.reverseScan = function(startModules, filter, callback) {
 	var fifo = startModules;
 	if(!fifo.push) fifo = [startModules];
 
@@ -43,14 +43,14 @@ Process.prototype.reverseScan = function(startModules, callback) {
 		var m = l.src ? l.src : l;
 		if(!l.src) l = {src:m};
 
-		m.ins.forEach(function(l) {fifo.push(l);});
+		m.ins.forEach(function(l) {if(!filter || filter(l)) fifo.push(l);});
 		callback(l);
 	}
 };
 
 
-Process.prototype.scanAll = function(callback) {
-	return this.scan(this.getSourceModules(), callback);
+Process.prototype.scanAll = function(filter, callback) {
+	return this.scan(this.getSourceModules(), filter, callback);
 };
 
 Process.prototype.getSourceModules = function() {
