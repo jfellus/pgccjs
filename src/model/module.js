@@ -1,4 +1,8 @@
 
+const EventEmitter = require('events').EventEmitter;
+const util = require('util');
+
+
 ////////////
 // MODULE //
 ////////////
@@ -15,9 +19,10 @@ function Module(script) {
 	this.script.addModule(this);
 	this.attached = true;
 }
+util.inherits(Module, EventEmitter);
 
 
-Module.prototype.set = function(k,v) { this.params[k] = v; };
+Module.prototype.set = function(k,v) { this.params[k] = v; this.emit('change', {key:k, value:v}); };
 Module.prototype.get = function(k) { return this.params[k]; };
 
 Module.prototype.connect = function(module) { new Link(this, module); };

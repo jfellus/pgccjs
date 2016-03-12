@@ -6,6 +6,6 @@
   "dependencies": {
     "q": "*"
   },
-  "main": "src/main.js",
+  "main": "src/pgcc.js",
   "license": "MIT"
 }

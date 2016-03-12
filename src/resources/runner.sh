@@ -6,6 +6,7 @@ function quit {
 	for proc in $procs; do
 		kill -s INT $proc 2>/dev/null
 	done
+	echo
 	exit 0
 }
 trap quit SIGINT SIGTERM SIGHUP EXIT

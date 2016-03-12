@@ -1,4 +1,9 @@
 
+const EventEmitter = require('events').EventEmitter;
+const util = require('util');
+
+
+
 //////////
 // LINK //
 //////////
@@ -16,8 +21,10 @@ function Link(src, dst) {
 	this.script.addLink(this);
 	this.attached = true;
 }
+util.inherits(Link, EventEmitter);
 
-Link.prototype.set = function(k,v) { this.params[k] = v; };
+
+Link.prototype.set = function(k,v) { this.params[k] = v; this.emit('change', {key:k, value:v});};
 Link.prototype.get = function(k) { return this.params[k]; };
 
 Link.prototype.delete = function() {
