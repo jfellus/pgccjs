@@ -60,7 +60,7 @@ ScriptReader.prototype.parseStatement = function(statement) {
     if(!src) throw 'No such src module \'' + srcName + "' in '" + statement + "'";
     if(!dst) throw 'No such dst module \'' + dstName + "' in '" + statement + "'";
     if(this.section === '[links]') {
-      this.link = new Link(src, dst);
+      this.link = new Link(this.script, src, dst);
       this.link.srcPin = srcPin;
       this.link.dstPin = dstPin;
       this.link.options = vs.slice(1);

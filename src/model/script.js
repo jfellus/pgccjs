@@ -69,8 +69,16 @@ Script.prototype.addModule = function(module) {
 	this.modules.push(module);
 };
 
+Script.prototype.removeModule = function(module) {
+	this.modules.remove(module);
+};
+
 Script.prototype.addLink = function(link) {
 	this.links.push(link);
+};
+
+Script.prototype.removeLink = function(link) {
+	this.links.remove(link);
 };
 
 Script.prototype.getModule = function(id) {

@@ -8,35 +8,56 @@ const util = require('util');
 // LINK //
 //////////
 
-function Link(src, dst) {
+function Link(script, src, dst) {
 	this.class = null;
 	this.id = null;
 	this.params = {};
-	this.script = src.script;
+	this.script = script;
 
-	this.src = src;
-	this.dst = dst;
-	this.src.addOut(this);
-	this.dst.addIn(this);
-	this.script.addLink(this);
-	this.attached = true;
+	this.set("src", src);
+	this.set("dst", dst);
 }
 util.inherits(Link, EventEmitter);
 
 
-Link.prototype.set = function(k,v) { this.params[k] = v; this.emit('change', {key:k, value:v});};
+Link.prototype.set = function(k,v) {
+	if(k === "src") {
+		if(typeof v === 'string') v = this.script.getModule(v);
+		if(this.src) this.detach();
+		this.src = v;
+		if(!v) return;
+		v = this.src.id;
+	} else if(k === "dst") {
+		if(typeof v === 'string') v = this.script.getModule(v);
+		if(this.dst) this.detach();
+		this.dst = v;
+		if(!v) return;
+		v = this.dst.id;
+	}
+
+	if((k==="src" || k==="dst") && this.src && this.dst && !this.attached) this.reattach();
+
+	this.params[k] = v; this.emit('change', {key:k, value:v});
+};
+
 Link.prototype.get = function(k) { return this.params[k]; };
+
+Link.prototype.detach = function() {
+	this.delete();
+}
 
 Link.prototype.delete = function() {
 	this.src.removeOut(this);
 	this.dst.removeIn(this);
 	this.script.removeLink(this);
+	this.attached = false;
 };
 
 Link.prototype.reattach = function() {
 	this.src.addOut(this);
 	this.dst.addIn(this);
 	this.script.addLink(this);
+	this.attached = true;
 };
 
 Link.prototype.needsRead = function() {
