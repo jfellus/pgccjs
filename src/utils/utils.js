@@ -62,7 +62,7 @@ if (!String.prototype.repeat) {
 Array.prototype.remove = function(o) {
 	var i = this.indexOf(o);
 	if(i===-1) return false;
-	return this.splice(i,1,0);
+	return this.splice(i,1);
 }
 
 

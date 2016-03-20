@@ -71,4 +71,10 @@ Link.prototype.isProcedural = function() {
 	return true; // TODO
 }
 
+Link.prototype.copyTo = function(l) {
+	l.class = this.class;
+	l.id = this.id;
+	for(var k in this.params) l.params[k] = this.params[k];
+}
+
 module.exports = Link;

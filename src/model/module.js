@@ -16,8 +16,10 @@ function Module(script) {
 	this.outs = [];
 	this.ins = [];
 
-	this.script.addModule(this);
-	this.attached = true;
+	if(this.script) {
+		this.script.addModule(this);
+		this.attached = true;
+	}
 }
 util.inherits(Module, EventEmitter);
 
@@ -40,6 +42,14 @@ Module.prototype.delete = function() {
 
 Module.prototype.reattach = function() {
 	this.script.addModule(this);
+};
+
+
+Module.prototype.copyTo = function(m) {
+	m.script = this.script;
+	m.class = this.class;
+	m.id = this.id;
+	for(var k in this.params) m.params[k] = this.params[k];
 };
 
 

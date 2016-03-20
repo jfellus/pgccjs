@@ -65,7 +65,7 @@ ScriptWriter.prototype.write = function(filename) {
       if(l.dstPin) dst += "." + l.dstPin;
       W(src + " -> " + dst + (l.get('options') ? " "+l.get('options').join(" ") : "") );
       for(p in l.params) {
-        if(p==='options') continue;
+        if(p==='options' || p==='src' || p==='dst' || p==='srcPin' || p==='dstPin') continue;
         W(p + " = " + l.params[p]);
       }
       W();

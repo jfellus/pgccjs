@@ -86,6 +86,10 @@ Script.prototype.getModule = function(id) {
 	return m.length>=1 ? m[0] : null;
 };
 
+Script.prototype.hasModule = function(id) {
+	return this.modules.filter(function(m) {return m.id === id; }).length >= 1;
+}
+
 Script.prototype.scan = function(startModules, filter, callback) {
 	var fifo = startModules;
 	if(!fifo.push) fifo = [startModules];
