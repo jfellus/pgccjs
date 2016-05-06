@@ -9,6 +9,6 @@ git clone git@github.com:jfellus/pgccjs.git
 
 2. That's it, no build needed ...
 
-## Use with edgar editor
+## Use with [EDGAR] editor
 
-See [https://github.com/jfellus/edgar/README.md]()
+See [EDGAR](https://github.com/jfellus/edgar/README.md])'s readme
