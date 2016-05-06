@@ -87,20 +87,20 @@ utils.cp = function(source, target) {
 
 
 
-process.on('uncaughtException', function(err){
-	var msg;
-	if (err.stack) msg = err.stack;
-	else msg = "Message: " + err.message;
-	console.error(msg);
-});
+// process.on('uncaughtException', function(err){
+// 	var msg;
+// 	if (err.stack) msg = err.stack;
+// 	else msg = "Message: " + err.message;
+// 	console.error(msg);
+// });
 
 // unhandled rejection due to non-catch exception, error or reject in promise/event
-process.on('unhandledRejection', function(err, p) {
-	var msg;
-	if (err && err.stack) msg = err.stack;
-	else if(err && err.message) msg = "Message: " + require('util').inspect(err.message);
-	console.error(msg);
-});
+// process.on('unhandledRejection', function(err, p) {
+// 	var msg;
+// 	if (err && err.stack) msg = err.stack;
+// 	else if(err && err.message) msg = "Message: " + require('util').inspect(err.message);
+// 	console.error(msg);
+// });
 
 
 

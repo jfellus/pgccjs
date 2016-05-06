@@ -40,6 +40,10 @@ Link.prototype.set = function(k,v) {
 	this.params[k] = v; this.emit('change', {key:k, value:v});
 };
 
+Link.prototype.unset = function(k) {
+	delete this.params[k]; this.emit('change', {key:k, value:undefined});
+};
+
 Link.prototype.get = function(k) { return this.params[k]; };
 
 Link.prototype.detach = function() {

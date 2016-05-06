@@ -1,3 +1,0 @@
-#!/bin/bash
-
-nodejs `dirname $0`/src/main.js

@@ -26,6 +26,9 @@ util.inherits(Module, EventEmitter);
 
 Module.prototype.set = function(k,v) { this.params[k] = v; this.emit('change', {key:k, value:v}); };
 Module.prototype.get = function(k) { return this.params[k]; };
+Module.prototype.unset = function(k) {
+	delete this.params[k]; this.emit('change', {key:k, value:undefined});
+};
 
 Module.prototype.connect = function(module) { new Link(this.script, this, module); };
 
