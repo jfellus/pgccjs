@@ -58,17 +58,23 @@ CPPWriter.prototype.writeProcess = function(proc, filename) {
 
 
 		// PROCESSING FLOW DIRECTIVES
+		function LINK_INIT(l) {
+			if(l.needsInit()) {} // TODO
+		}
+		function LINK_UNINIT(l) {
+			if(l.needsInit()) {} // TODO
+		}
 		function LINK_READ(l) {
-			// TODO
+			if(l.needsRead()) {} // TODO
 		}
 		function LINK_WRITE(l) {
-			// TODO
+			if(l.needsWrite()) {} // TODO
 		}
 
 		function MODULE_CALL(m) {
-			m.ins.forEach(function(l) { if(l.needsRead()) LINK_READ(l); });
+			m.ins.forEach(function(l) { LINK_READ(l); });
 			CALL(m.id + ".process", m.ins.map(function(l) { return l.srcPin ? (l.src.id + "." + l.srcPin) : l.src.id; }));
-			m.outs.forEach(function(l) { if(l.needsWrite()) LINK_WRITE(l); })
+			m.outs.forEach(function(l) { LINK_WRITE(l); })
 		}
 
 
@@ -86,6 +92,7 @@ CPPWriter.prototype.writeProcess = function(proc, filename) {
 
 		FUNCTION("void", "init", []);
 		proc.scanAllOnce(function(l){return l.isProcedural();}, function(l) {
+			LINK_INIT(l);
 			for(var i in l.dst.params) S(l.dst.id + "." + i + " = " + l.dst.params[i]);
 			CALL(l.dst.id + ".init", []);
 		});
@@ -95,6 +102,7 @@ CPPWriter.prototype.writeProcess = function(proc, filename) {
 		FUNCTION("void", "deinit", []);
 		proc.reverseScanAllOnce(function(l){return l.isProcedural();}, function(l) {
 			CALL(l.src.id + ".deinit", []);
+			LINK_UNINIT(l);
 		});
 		END();
 		W();

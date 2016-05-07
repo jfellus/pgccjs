@@ -64,6 +64,10 @@ Link.prototype.reattach = function() {
 	this.attached = true;
 };
 
+Link.prototype.needsInit = function() {
+	return false; // TODO
+};
+
 Link.prototype.needsRead = function() {
 	return false; // TODO
 };
