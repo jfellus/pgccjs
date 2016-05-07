@@ -1,5 +1,7 @@
 # pgccjs
 
+A Dataflow systems compiler in less than 1000 lines of code
+
 ## Install from sources
 
 1. Checkout the sources
