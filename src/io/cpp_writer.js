@@ -3,8 +3,11 @@ const Q = require("q");
 const DBG = require("../utils/utils").DBG;
 
 
-var SYS_INCLUDES = [];
+var SYS_INCLUDES = []; // System headers to include in all C++ source files
 
+/////////////////////////////////////////////////
+// CPPWriter : Compile a Script to C++ sources //
+/////////////////////////////////////////////////
 
 function CPPWriter(script) {
 	this.script = script;
@@ -13,12 +16,16 @@ function CPPWriter(script) {
 CPPWriter.prototype.write = function(outdir) {
 	var that = this;
 	try { fs.mkdirSync(outdir); } catch(e) {}
+	if(!this.script.processes) this.script.computeProcesses();
 	return Q.all(this.script.processes.map(function(p) {
 		that.writeProcess(p, outdir + "/" + p.name + ".cpp");
 	}));
 }
 
-
+/**
+ *	Compile a single Process to a C++ source file
+ *	@return a Promise
+*/
 CPPWriter.prototype.writeProcess = function(proc, filename) {
 	var defered = Q.defer();
 	var that = this;
@@ -26,6 +33,7 @@ CPPWriter.prototype.writeProcess = function(proc, filename) {
 		var promise = Q();
 		var nbTabs = 0;
 
+		// Async writing helper
 		function W(str) {
 			if(!str) str = "";
 			str = '\t'.repeat(nbTabs) + str + "\n";
@@ -63,7 +71,7 @@ CPPWriter.prototype.writeProcess = function(proc, filename) {
 		}
 
 
-		// EFFECTIVE WRITING
+		// EFFECTIVELY WRITE THE CPP SOURCES
 		SYS_INCLUDES.forEach(function(i) { INCLUDE("<"+i+">"); });
 		INCLUDE('"pgcc-script.h"');
 		proc.includes.forEach(function(i) { INCLUDE('<' + i + '>')});

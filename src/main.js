@@ -3,17 +3,25 @@ var Script = require("./model/script");
 var Compiler = require("./compiler");
 const DBG = utils.DBG;
 
-
 process.title = 'pgcc';
 
+function usage() {
+    console.error("PGCC - The dataflow system compiler");
+    console.error("-----------------------------------");
+    console.error(" Usage : pgcc <file.script>");
+}
 
-var s = new Script("./test.script");
-s.on('loaded', function(nbErrors) {
-  console.log("Script " + s.name + " loaded with " + nbErrors + " errors");
-  try { s.computeProcesses(); } catch(e) {console.error(e.stack);}
+function compile(scriptfile) {
+    var s = new Script(scriptfile);
+    s.on('loaded', function(nbErrors) {
+        try {
+            new Compiler().compile(s, scriptfile.replace(".script", ""));
+            s.computeProcesses();
+        } catch(e) {console.error(e.stack);}
+    });
+}
 
-  s.write('./out.script').then(function() {
-    console.log('Script ' + s.name + ' written to out.script');
-    try {new Compiler().compile(s, "out"); } catch(e) { console.error(e.stack); }
-  });
-});
+var filename = process.argv[2];
+if(!filename) usage();
+
+compile(scriptfile);

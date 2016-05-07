@@ -9,6 +9,10 @@ const Process = require("./process");
 
 var SCRIPT = null;
 
+////////////
+// SCRIPT //
+////////////
+
 function Script(filename) {
 	this.modules = [];
 	this.links = [];
@@ -18,6 +22,9 @@ function Script(filename) {
 	if(filename) this.read(filename);
 }
 util.inherits(Script, EventEmitter);
+
+
+// IO
 
 Script.prototype.read = function(filename) {
 	var that = this;
@@ -31,39 +38,7 @@ Script.prototype.write = function(filename) {
 	return new ScriptWriter(this).write(filename);
 }
 
-Script.prototype.computeConnectedComponents = function() {
-	var that = this;
-	this.getSourceModules().forEach(function(m, i) {
-		that.scan(m, function(l) { return l.isProcedural(); }, function(l) {
-			l.dst.connectedComponent = l.src ? l.src.connectedComponent : i;
-		});
-	});
-	this.getLeafModules().forEach(function(m, i) {
-		that.reverseScan(m, function(l) { return l.isProcedural(); }, function(l) {
-			if(l.dst) l.src.connectedComponent = l.dst.connectedComponent;
-		});
-	});
-}
-
-Script.prototype.computeProcesses = function() {
-	var that = this;
-	if(!this.processes || this.processes.length) this.processes = [];
-	this.computeConnectedComponents();
-
-	this.modules.forEach(function(m) {
-		while(that.processes.length < m.connectedComponent + 1 ) that.processes.push(new Process(that, that.processes.length));
-		that.processes[m.connectedComponent].addModule(m);
-	});
-}
-
-Script.prototype.declare = function(k, v) {
-	if(k == 'script') this.name = v;
-	else if(k == 'include') this.include(v);
-};
-
-Script.prototype.include = function(lib) {
-	if(this.includes.indexOf(lib)===-1) this.includes.push(lib);
-};
+// Manipulation
 
 Script.prototype.addModule = function(module) {
 	this.modules.push(module);
@@ -90,6 +65,61 @@ Script.prototype.hasModule = function(id) {
 	return this.modules.filter(function(m) {return m.id === id; }).length >= 1;
 }
 
+
+// Script properties
+
+/** Declare a new script-global property */
+Script.prototype.declare = function(k, v) {
+	if(k == 'script') this.name = v;
+	else if(k == 'include') this.include(v);
+};
+
+/** Include a modules library to this script */
+Script.prototype.include = function(lib) {
+	if(this.includes.indexOf(lib)===-1) this.includes.push(lib);
+};
+
+
+// Computations
+
+/** Assign a connected component number to each module,
+ * such that two modules have the same number iff they belong to the same connected component of the graph */
+Script.prototype.computeConnectedComponents = function() {
+	var that = this;
+	this.getSourceModules().forEach(function(m, i) {
+		that.scan(m, function(l) { return l.isProcedural(); }, function(l) {
+			l.dst.connectedComponent = l.src ? l.src.connectedComponent : i;
+		});
+	});
+	this.getLeafModules().forEach(function(m, i) {
+		that.reverseScan(m, function(l) { return l.isProcedural(); }, function(l) {
+			if(l.dst) l.src.connectedComponent = l.dst.connectedComponent;
+		});
+	});
+}
+
+/** Compute this script's processes (each process is a subgraph representing a single connected component) */
+Script.prototype.computeProcesses = function() {
+	var that = this;
+	if(!this.processes || this.processes.length) this.processes = [];
+	this.computeConnectedComponents();
+
+	this.modules.forEach(function(m) {
+		while(that.processes.length < m.connectedComponent + 1 ) that.processes.push(new Process(that, that.processes.length));
+		that.processes[m.connectedComponent].addModule(m);
+	});
+
+	return this.processes;
+}
+
+
+
+// Dataflow scan
+
+/**
+ * Scan this script's graph, starting flowing from the given <startModules>,
+ * and calling <callback> for each met module except those for which <filter> returns false
+ */
 Script.prototype.scan = function(startModules, filter, callback) {
 	var fifo = startModules;
 	if(!fifo.push) fifo = [startModules];
@@ -104,6 +134,10 @@ Script.prototype.scan = function(startModules, filter, callback) {
 	}
 };
 
+/**
+ * Scan this script's graph in reverse flow, starting from the given <startModules>,
+ * and calling <callback> for each met module except those for which <filter> returns false
+ */
 Script.prototype.reverseScan = function(startModules, filter, callback) {
 	var fifo = startModules;
 	if(!fifo.push) fifo = [startModules];
@@ -118,6 +152,7 @@ Script.prototype.reverseScan = function(startModules, filter, callback) {
 	}
 };
 
+/** Behaves as #scan, but don't exploit modules more than once */
 Script.prototype.scanOnce = function(startModules, filter, callback) {
 	this.modules.forEach(function(m) { m._toScan = true; });
 
@@ -134,6 +169,7 @@ Script.prototype.scanOnce = function(startModules, filter, callback) {
 	}
 };
 
+/** Behaves as #reverseScan, but don't exploit modules more than once */
 Script.prototype.reverseScanOnce = function(startModules, filter, callback) {
 	this.modules.forEach(function(m) { m._toScan = true; });
 
@@ -151,29 +187,34 @@ Script.prototype.reverseScanOnce = function(startModules, filter, callback) {
 };
 
 
+/** Call #scan, starting with all source modules */
 Script.prototype.scanAll = function(filter, callback) {
 	return this.scan(this.getSourceModules(), filter, callback);
 };
 
+/** Call #reverseScan, starting with all leaf modules */
 Script.prototype.reverseScanAll = function(filter, callback) {
 	return this.scan(this.getLeafModules(), filter, callback);
 };
 
+/** Call #scanOnce, starting with all source modules */
 Script.prototype.scanAllOnce = function(filter, callback) {
 	return this.scan(this.getSourceModules(), filter, callback);
 };
 
+/** Call #reverseScanOnce, starting with all leaf modules */
 Script.prototype.reverseScanAllOnce = function(filter, callback) {
 	return this.reverseScanOnce(this.getLeafModules(), filter, callback);
 };
 
-
+/** @return all source modules (i.e., modules with no inputs) */
 Script.prototype.getSourceModules = function() {
 	var sm = [];
 	this.modules.forEach(function(m) { if(m.nbIns()===0) sm.push(m); });
 	return sm;
 };
 
+/** @return all leaf modules (i.e., modules with no outputs) */
 Script.prototype.getLeafModules = function() {
 	var sm = [];
 	this.modules.forEach(function(m) { if(m.nbOuts()===0) sm.push(m); });

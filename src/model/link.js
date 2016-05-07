@@ -71,6 +71,7 @@ Link.prototype.needsRead = function() {
 Link.prototype.needsWrite = function() {
 	return false; // TODO
 };
+
 Link.prototype.isProcedural = function() {
 	return true; // TODO
 }

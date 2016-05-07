@@ -1,7 +1,10 @@
-
 var Script = require("./script");
 var DBG = require("../utils/utils").DBG;
 
+
+/////////////
+// PROCESS //
+/////////////
 
 function Process(script, iProcess) {
   this.script = script;
@@ -20,6 +23,10 @@ Process.prototype.getModule = function(id) {
 	return m ? m[0] : null;
 };
 
+/**
+ * Scan this process's graph, starting flowing from the given <startModules>,
+ * and calling <callback> for each met module except those for which <filter> returns false
+ */
 Process.prototype.scan = function(startModules, filter, callback) {
 	var fifo = startModules;
 	if(!fifo.push) fifo = [startModules];
@@ -34,6 +41,10 @@ Process.prototype.scan = function(startModules, filter, callback) {
 	}
 };
 
+/**
+ * Scan this process's graph in reverse flow, starting from the given <startModules>,
+ * and calling <callback> for each met module except those for which <filter> returns false
+ */
 Process.prototype.reverseScan = function(startModules, filter, callback) {
 	var fifo = startModules;
 	if(!fifo.push) fifo = [startModules];
@@ -49,6 +60,7 @@ Process.prototype.reverseScan = function(startModules, filter, callback) {
 };
 
 
+/** Behaves as #scan, but don't exploit modules more than once */
 Process.prototype.scanOnce = function(startModules, filter, callback) {
 	this.modules.forEach(function(m) { m._toScan = true; });
 	var fifo = startModules;
@@ -64,6 +76,7 @@ Process.prototype.scanOnce = function(startModules, filter, callback) {
 	}
 };
 
+/** Behaves as #reverseScan, but don't exploit modules more than once */
 Process.prototype.reverseScanOnce = function(startModules, filter, callback) {
 	this.modules.forEach(function(m) { m._toScan = true; });
 	var fifo = startModules;
@@ -79,30 +92,34 @@ Process.prototype.reverseScanOnce = function(startModules, filter, callback) {
 	}
 };
 
-
-
+/** Call #scan, starting with all source modules */
 Process.prototype.scanAll = function(filter, callback) {
 	return this.scan(this.getSourceModules(), filter, callback);
 };
 
+/** Call #reverseScan, starting with all leaf modules */
 Process.prototype.reverseScanAll = function(filter, callback) {
 	return this.reverseScan(this.getLeafModules(), filter, callback);
 };
 
+/** Call #scanOnce, starting with all source modules */
 Process.prototype.scanAllOnce = function(filter, callback) {
 	return this.scanOnce(this.getSourceModules(), filter, callback);
 };
 
+/** Call #reverseScanOnce, starting with all leaf modules */
 Process.prototype.reverseScanAllOnce = function(filter, callback) {
 	return this.reverseScanOnce(this.getLeafModules(), filter, callback);
 };
 
+/** @return all source modules (i.e., modules with no inputs) */
 Process.prototype.getSourceModules = function() {
 	var sm = [];
 	this.modules.forEach(function(m) { if(m.nbIns()===0) sm.push(m); });
 	return sm;
 };
 
+/** @return all leaf modules (i.e., modules with no outputs) */
 Process.prototype.getLeafModules = function() {
 	var sm = [];
 	this.modules.forEach(function(m) { if(m.nbOuts()===0) sm.push(m); });

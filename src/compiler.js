@@ -5,8 +5,12 @@ var fs = require("fs");
 var cp = require("./utils/utils").cp;
 var DBG = require("./utils/utils").DBG;
 
-function Compiler() {
-}
+
+//////////////
+// COMPILER //
+//////////////
+
+function Compiler() {}
 
 Compiler.prototype.compile = function(script, outdir) {
 	var that = this;

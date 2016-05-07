@@ -2,6 +2,10 @@ const util = require("util");
 const fs = require("fs");
 const Q = require("q");
 
+/////////////////////
+// STRING POLYFILL //
+/////////////////////
+
 String.prototype.before = function(str) {
   var i = this.indexOf(str);
   if(i===-1) return this;
@@ -59,6 +63,10 @@ if (!String.prototype.repeat) {
 }
 
 
+////////////////////
+// ARRAY POLYFILL //
+////////////////////
+
 Array.prototype.remove = function(o) {
 	var i = this.indexOf(o);
 	if(i===-1) return false;
@@ -66,6 +74,10 @@ Array.prototype.remove = function(o) {
 }
 
 
+
+///////////////////////
+// UTILITY FUNCTIONS //
+///////////////////////
 
 utils = {};
 
@@ -83,26 +95,6 @@ utils.cp = function(source, target) {
     rd.pipe(wr);
     return defered.promise;
 }
-
-
-
-
-// process.on('uncaughtException', function(err){
-// 	var msg;
-// 	if (err.stack) msg = err.stack;
-// 	else msg = "Message: " + err.message;
-// 	console.error(msg);
-// });
-
-// unhandled rejection due to non-catch exception, error or reject in promise/event
-// process.on('unhandledRejection', function(err, p) {
-// 	var msg;
-// 	if (err && err.stack) msg = err.stack;
-// 	else if(err && err.message) msg = "Message: " + require('util').inspect(err.message);
-// 	console.error(msg);
-// });
-
-
 
 
 module.exports = utils;
