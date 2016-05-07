@@ -6,17 +6,17 @@ const DBG = utils.DBG;
 process.title = 'pgcc';
 
 function usage() {
-    console.error("PGCC - The dataflow system compiler");
-    console.error("-----------------------------------");
-    console.error(" Usage : pgcc <file.script>");
+    console.error("\nPGCC - The dataflow system compiler\n");
+    console.error(" Usage : pgcc <file.script>\n\n");
+    process.exit(1);
 }
 
 function compile(scriptfile) {
     var s = new Script(scriptfile);
     s.on('loaded', function(nbErrors) {
         try {
-            new Compiler().compile(s, scriptfile.replace(".script", ""));
             s.computeProcesses();
+            new Compiler().compile(s, scriptfile.replace(".script", ""));
         } catch(e) {console.error(e.stack);}
     });
 }
@@ -24,4 +24,4 @@ function compile(scriptfile) {
 var filename = process.argv[2];
 if(!filename) usage();
 
-compile(scriptfile);
+compile(filename);

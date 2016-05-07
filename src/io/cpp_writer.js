@@ -16,7 +16,7 @@ function CPPWriter(script) {
 CPPWriter.prototype.write = function(outdir) {
 	var that = this;
 	try { fs.mkdirSync(outdir); } catch(e) {}
-	if(!this.script.processes) this.script.computeProcesses();
+	if(!this.script.processes || !this.script.processes.length) this.script.computeProcesses();
 	return Q.all(this.script.processes.map(function(p) {
 		that.writeProcess(p, outdir + "/" + p.name + ".cpp");
 	}));
@@ -29,6 +29,7 @@ CPPWriter.prototype.write = function(outdir) {
 CPPWriter.prototype.writeProcess = function(proc, filename) {
 	var defered = Q.defer();
 	var that = this;
+	console.log("[cpp] " + filename);
 	fs.open(filename, 'w', 0664, function( e, file ) {
 		var promise = Q();
 		var nbTabs = 0;
