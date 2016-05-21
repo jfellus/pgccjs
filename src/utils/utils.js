@@ -18,6 +18,14 @@ String.prototype.after = function(str) {
   return this.substr(i+str.length, this.length);
 }
 
+String.prototype.startsWith = function(str) {
+    return this.indexOf(str) === 0;
+}
+
+String.prototype.endsWith = function(str) {
+    return this.lastIndexOf(str) === this.length - str.length;
+}
+
 if (!String.prototype.repeat) {
   String.prototype.repeat = function(count) {
     'use strict';
