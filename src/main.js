@@ -37,8 +37,7 @@ function compile(scriptfile) {
 /** Index the content of the given <sourcefiles> and write the resulting modules library to <outfile> */
 function index(sourcefiles, outfile) {
     var i = new Index();
-    sourcefiles
-    .forEach(function(f) { i.append(f); });
+    sourcefiles.forEach(function(f) { i.append(f); });
     i.write(outfile);
 }
 
@@ -52,18 +51,20 @@ function declare(files) {
 
 /** List all globally defined modules */
 function list_all() {
-    var libs = childProcess.execSync("ls -1 " + PGCC_LIBS_DIR + "/*").toString().split("\n");
-    libs.forEach(function(lib) { list_file(lib); });
+    process.stdout.write(childProcess.execSync("cat " + PGCC_LIBS_DIR + "/*").toString()); // TODO !
 }
 
 /** List the modules defined in the given library <file> */
 function list_file(file) {
-    console.log(childProcess.execSync("cat " + file).toString()); // TODO !
+    process.stdout.write(childProcess.execSync("cat " + file).toString()); // TODO !
 }
 
 /** Find the give <func> module in the globally declared libraries */
 function lookup_function(func) {
-    console.log(childProcess.execSync("grep -e '"+func+"' " + PGCC_LIBS_DIR + "/*").toString()); // TODO !
+    try {
+        func = func.replace("*", "[a-z0-9A-Z_]*");
+        process.stdout.write(childProcess.execSync("cat " + PGCC_LIBS_DIR + "/* 2>/dev/null | grep -e '^"+func+" '").toString()); // TODO !
+    } catch(e) {}
 }
 
 
@@ -74,7 +75,7 @@ function lookup_function(func) {
 if(!process.argv[2]) usage();
 else if(process.argv[2] === '-i') {
     if(!process.argv[3] || !process.argv[4]) usage();
-    index(process.argv.slice(3), process.argv[process.argv.length-1]);
+    index(process.argv.slice(3,process.argv.length-1), process.argv[process.argv.length-1]);
 } else if(process.argv[2] === '-d') {
     if(!process.argv[3]) usage();
     declare(process.argv.slice(3));

@@ -1,3 +1,4 @@
 #!/bin/bash
 
-node ./src/main.js $*
+ABS_FILE=`readlink -f $0`
+node `dirname $ABS_FILE`/src/main.js $*

@@ -18,6 +18,12 @@ String.prototype.after = function(str) {
   return this.substr(i+str.length, this.length);
 }
 
+String.prototype.nth = function(sep, i) {
+    var sp = this.split(sep);
+    if(i<0) return sp[sp.length+i];
+    else return sp[i];
+}
+
 String.prototype.startsWith = function(str) {
     return this.indexOf(str) === 0;
 }
