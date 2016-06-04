@@ -1,6 +1,7 @@
 
 const EventEmitter = require('events').EventEmitter;
 const util = require('util');
+const Pins = require('../indexer/pins');
 
 
 ////////////
@@ -53,6 +54,16 @@ Module.prototype.copyTo = function(m) {
 	m.class = this.class;
 	m.id = this.id;
 	for(var k in this.params) m.params[k] = this.params[k];
+};
+
+Module.prototype.getPin = function(name) {
+	if(!this.pins) return null;
+	return this.pins.filter(function(p) {return p.name = name;})[0];
+};
+
+Module.prototype.getPins = function() {
+	if(!this.pins) this.pins = Pins.getPins(this.class);
+	return this.pins;
 };
 
 

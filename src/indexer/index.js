@@ -45,9 +45,10 @@ Index.prototype.addCtagsTag = function(tag) {
 Index.prototype.write = function(file) {
 	childProcess.execSync("mkdir -p " + path.dirname(file));
 	fs.unlink(file);
+	var libname = path.basename(file);
 	this.tags.forEach(function(tag) {
 		fs.appendFileSync(file,
-			[tag.name, tag.file, tag.line, tag.lang, tag.ret, tag.signature].join(" | ") + "\n"
+			[tag.name, tag.file, libname, tag.line, tag.lang, tag.ret, tag.signature].join(" | ") + "\n"
 		);
 	});
 }

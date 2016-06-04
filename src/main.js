@@ -59,7 +59,7 @@ function list_file(file) {
     process.stdout.write(childProcess.execSync("cat " + file).toString()); // TODO !
 }
 
-/** Find the give <func> module in the globally declared libraries */
+/** Find the given <func> module in the globally declared libraries */
 function lookup_function(func) {
     try {
         func = func.replace("*", "[a-z0-9A-Z_]*");

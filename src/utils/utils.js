@@ -12,8 +12,20 @@ String.prototype.before = function(str) {
   return this.substr(0, i);
 }
 
+String.prototype.beforeLast = function(str) {
+  var i = this.lastIndexOf(str);
+  if(i===-1) return this;
+  return this.substr(0, i);
+}
+
 String.prototype.after = function(str) {
   var i = this.indexOf(str);
+  if(i===-1) return this;
+  return this.substr(i+str.length, this.length);
+}
+
+String.prototype.afterLast = function(str) {
+  var i = this.lastIndexOf(str);
   if(i===-1) return this;
   return this.substr(i+str.length, this.length);
 }
