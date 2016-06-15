@@ -84,29 +84,41 @@ Script.prototype.include = function(lib) {
 
 /** Assign a connected component number to each module,
  * such that two modules have the same number iff they belong to the same connected component of the graph */
-Script.prototype.computeConnectedComponents = function() {
-	var that = this;
-	this.getSourceModules().forEach(function(m, i) {
-		that.scan(m, function(l) { return l.isProcedural(); }, function(l) {
-			l.dst.connectedComponent = l.src ? l.src.connectedComponent : i;
-		});
-	});
-	this.getLeafModules().forEach(function(m, i) {
-		that.reverseScan(m, function(l) { return l.isProcedural(); }, function(l) {
-			if(l.dst) l.src.connectedComponent = l.dst.connectedComponent;
-		});
-	});
+ Script.prototype.computeConnectedComponents = function() {
+	 var that = this;
+
+	 var filter = function(l) { return l.isProcedural(); };
+	 this.getSourceModules(filter).forEach(function(m, i) {
+		 that.scan(m, filter, function(l) {
+			 l.dst.connectedComponent = l.src ? l.src.connectedComponent : i;
+		 });
+	 });
+	 this.getLeafModules(filter).forEach(function(m, i) {
+		 that.reverseScan(m, filter, function(l) {
+			 if(l.dst) l.src.connectedComponent = l.dst.connectedComponent;
+		 });
+	 });
 }
 
 /** Compute this script's processes (each process is a subgraph representing a single connected component) */
 Script.prototype.computeProcesses = function() {
 	var that = this;
-	if(!this.processes || this.processes.length) this.processes = [];
-	this.computeConnectedComponents();
+	if(!this.processes || !this.processes.length) this.processes = [];
+
+	try {
+		this.computeConnectedComponents();
+	} catch(e) {
+		console.error(e);
+		process.exit(-1);
+	}
 
 	this.modules.forEach(function(m) {
 		while(that.processes.length < m.connectedComponent + 1 ) that.processes.push(new Process(that, that.processes.length));
 		that.processes[m.connectedComponent].addModule(m);
+	});
+
+	this.processes.forEach(function(p) {
+		p.inferLanguage();
 	});
 
 	return this.processes;
@@ -189,37 +201,48 @@ Script.prototype.reverseScanOnce = function(startModules, filter, callback) {
 
 /** Call #scan, starting with all source modules */
 Script.prototype.scanAll = function(filter, callback) {
-	return this.scan(this.getSourceModules(), filter, callback);
+	return this.scan(this.getSourceModules(filter), filter, callback);
 };
 
 /** Call #reverseScan, starting with all leaf modules */
 Script.prototype.reverseScanAll = function(filter, callback) {
-	return this.scan(this.getLeafModules(), filter, callback);
+	return this.scan(this.getLeafModules(filter), filter, callback);
 };
 
 /** Call #scanOnce, starting with all source modules */
 Script.prototype.scanAllOnce = function(filter, callback) {
-	return this.scan(this.getSourceModules(), filter, callback);
+	return this.scan(this.getSourceModules(filter), filter, callback);
 };
 
 /** Call #reverseScanOnce, starting with all leaf modules */
 Script.prototype.reverseScanAllOnce = function(filter, callback) {
-	return this.reverseScanOnce(this.getLeafModules(), filter, callback);
+	return this.reverseScanOnce(this.getLeafModules(filter), filter, callback);
 };
 
 /** @return all source modules (i.e., modules with no inputs) */
-Script.prototype.getSourceModules = function() {
+Script.prototype.getSourceModules = function(filter) {
 	var sm = [];
-	this.modules.forEach(function(m) { if(m.nbIns()===0) sm.push(m); });
+	this.modules.forEach(function(m) { if(m.nbIns(filter)===0) sm.push(m); });
 	return sm;
 };
 
 /** @return all leaf modules (i.e., modules with no outputs) */
-Script.prototype.getLeafModules = function() {
+Script.prototype.getLeafModules = function(filter) {
 	var sm = [];
-	this.modules.forEach(function(m) { if(m.nbOuts()===0) sm.push(m); });
+	this.modules.forEach(function(m) { if(m.nbOuts(filter)===0) sm.push(m); });
 	return sm;
 };
 
+// Debugging
+
+Script.prototype.dumpProcesses = function() {
+	if(!this.processes || !this.processes.length) this.computeProcesses();
+	this.processes.forEach(function(p){
+		console.log("[Process "+p.name+"] " + p.inferLanguage());
+		p.modules.forEach(function(m) {
+			console.log(" - " + m.class + " " + m.id);
+		});
+	});
+}
 
 module.exports = Script;

@@ -1,6 +1,7 @@
 
 const EventEmitter = require('events').EventEmitter;
 const util = require('util');
+const IndexLookup = require('../indexer/lookup');
 
 
 
@@ -65,25 +66,26 @@ Link.prototype.reattach = function() {
 };
 
 Link.prototype.needsInit = function() {
-	return false; // TODO
+	return !this.isProcedural();
 };
 
 Link.prototype.needsRead = function() {
-	return false; // TODO
+	return !this.isProcedural();
 };
 
 Link.prototype.needsWrite = function() {
-	return false; // TODO
+	return !this.isProcedural();
 };
 
 Link.prototype.isProcedural = function() {
-	return true; // TODO
-}
+	return !this.get("type") &&
+		IndexLookup.getModuleLang(this.src.class) === IndexLookup.getModuleLang(this.dst.class);
+};
 
 Link.prototype.copyTo = function(l) {
 	l.class = this.class;
 	l.id = this.id;
 	for(var k in this.params) l.params[k] = this.params[k];
-}
+};
 
 module.exports = Link;

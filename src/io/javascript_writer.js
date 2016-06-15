@@ -1,26 +1,25 @@
 const fs = require('fs');
 const Q = require("q");
 const DBG = require("../utils/utils").DBG;
+const IndexLookup = require("../indexer/lookup");
 
 
-var SYS_INCLUDES = ["pgcc-script.h"]; // System headers to include in all C++ source files
+/////////////////////////////////////////////////////////////////////////
+// JavascriptWriter : Compile a Process to Javascript (nodejs) sources //
+/////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////
-// CPPWriter : Compile a Process to C++ sources //
-//////////////////////////////////////////////////
-
-function CPPWriter() {
+function JavascriptWriter() {
 }
 
 /**
- *	Compile a single Process to a C++ source file
+ *	Compile a single Process to a Javascript (nodejs) source file
  *	@return a Promise
 */
-CPPWriter.prototype.writeProcess = function(proc, outdir) {
-	var filename = outdir + "/" + proc.name + ".cpp";
+JavascriptWriter.prototype.writeProcess = function(proc, outdir) {
+	var filename = outdir + "/" + proc.name + ".js";
 	var defered = Q.defer();
 	var that = this;
-	console.log("[cpp] " + filename);
+	console.log("[js] " + filename);
 
 	proc.computeIncludes();
 
@@ -46,14 +45,18 @@ CPPWriter.prototype.writeProcess = function(proc, outdir) {
 
 		function FOR(a,b,c) { W("for(" + a + "; " + b + "; " + c + ") {"); TAB(); }
 		function END() { UNTAB(); W("}");}
-		function INCLUDE(x) { W("#include " + x); }
-		function FUNCTION(ret_type, name, params) { if(typeof(params)==='string') params = [params]; W(ret_type + " " + name + '(' +  params.join(', ') +') {'); TAB(); }
+		function INCLUDE(x) {
+			x = x.before(".js");
+			var moduleName = "module_"+x.afterLast("/");
+			W("const " + moduleName + " = require('" + x + "');");
+		}
+		function FUNCTION(name, params) { if(!params) params = []; if(typeof(params)==='string') params = [params]; W("function " + name + '(' +  params.join(', ') +') {'); TAB(); }
 		function CALL(func, params) { if(!params) params = []; if(typeof(params)==='string') params = [params]; S(func + "(" + params.join(', ') + ")");}
 
 
 		// PROCESSING FLOW DIRECTIVES
-		function LINK_DECLARE_IN(l) 	{ if(l.needsInit && l.needsInit())   S("PgccLinkIn _link_"+l.src.id+"_"+l.dst.id); }
-		function LINK_DECLARE_OUT(l) 	{ if(l.needsInit && l.needsInit())   S("PgccLinkOut _link_"+l.src.id+"_"+l.dst.id); }
+		function LINK_DECLARE_IN(l) 	{ if(l.needsInit && l.needsInit())   S("var _link_"+l.src.id+"_"+l.dst.id + " = new PGCC.LinkIn()"); }
+		function LINK_DECLARE_OUT(l) 	{ if(l.needsInit && l.needsInit())   S("var _link_"+l.src.id+"_"+l.dst.id + " = new PGCC.LinkOut()"); }
 		function LINK_INIT(l) 			{ if(l.needsInit && l.needsInit())   CALL("_link_"+l.src.id+"_"+l.dst.id + ".init"); }
 		function LINK_UNINIT(l) 		{ if(l.needsInit && l.needsInit())   CALL("_link_"+l.src.id+"_"+l.dst.id + ".destroy"); }
 		function LINK_START_READ(l) 	{ if(l.needsRead && l.needsRead())   CALL("_link_"+l.src.id+"_"+l.dst.id + ".startRead"); }
@@ -92,19 +95,20 @@ CPPWriter.prototype.writeProcess = function(proc, outdir) {
 
 
 		// EFFECTIVELY WRITE THE CPP SOURCES
-		SYS_INCLUDES.forEach(function(i) { INCLUDE("<"+i+">"); });
-		proc.includes.forEach(function(i) { INCLUDE('"' + i + '"')});
+		S("const PGCC = require('pgcc')");
+		proc.includes.forEach(function(i) { INCLUDE(i); });
 		W();
 
 		proc.modules.forEach(function(m) {
-			S(m.class + " " + m.id);
+			var req = "module_"+IndexLookup.lookupModule(m.class).file.before(".js").afterLast('/');
+			S("var " + m.id + " = new " + req + "." + m.class + "()");
 		});
 		W();
 
 		DECLARE_EXTERNAL_LINKS();
 		W();
 
-		FUNCTION("void", "init", []);
+		FUNCTION("init");
 		proc.scanAllOnce(function(l){return l.isProcedural();}, function(l) {
 			LINK_INIT(l);
 			for(var i in l.dst.params) S(l.dst.id + "." + i + " = " + l.dst.params[i]);
@@ -114,7 +118,7 @@ CPPWriter.prototype.writeProcess = function(proc, outdir) {
 		END();
 		W();
 
-		FUNCTION("void", "deinit", []);
+		FUNCTION("deinit");
 		proc.reverseScanAllOnce(function(l){return l.isProcedural();}, function(l) {
 			CALL(l.src.id + ".deinit", []);
 		});
@@ -122,21 +126,23 @@ CPPWriter.prototype.writeProcess = function(proc, outdir) {
 		END();
 		W();
 
-		FUNCTION("void", "process", []);
+		FUNCTION("process");
 		proc.scanAllOnce(function(l){return l.isProcedural();}, function(l) {
 			MODULE_CALL(l.dst);
 		});
 		END();
 		W();
 
-		FUNCTION("int", "main", ["char** argv", "int argv"]);
-			FOR("int iteration = 0", "", "iteration++");
+		FUNCTION("main");
+			FOR("var iteration = 0", "", "iteration++");
 				CALL("process");
 			END();
 		END();
+		W();
+		CALL("main");
 
 	});
 	return defered.promise;
 }
 
-module.exports = CPPWriter;
+module.exports = JavascriptWriter;

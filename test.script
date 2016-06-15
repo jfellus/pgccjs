@@ -1,4 +1,4 @@
-Script new_script_0
+Script joubi
 Include pg_nav
 Include pg_basics
 Include pg_gtk
@@ -14,6 +14,8 @@ john = "jimmy"
 Zib zob
 Solo solo
 Duo duo
+zibou moule
+pet = prout
 
 [Links]
 cam.a -> ptcg.b
@@ -22,3 +24,4 @@ type = async
 ptcg -> zob
 type = sync
 solo -> duo
+duo -> moule

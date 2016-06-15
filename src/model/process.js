@@ -1,5 +1,6 @@
 var Script = require("./script");
 var DBG = require("../utils/utils").DBG;
+const IndexLookup = require("../indexer/lookup");
 
 
 /////////////
@@ -21,6 +22,10 @@ Process.prototype.addModule = function(m) {
 Process.prototype.getModule = function(id) {
 	var m = this.modules.filter(function(m) { return m.id === id; });
 	return m ? m[0] : null;
+};
+
+Process.prototype.addInclude = function(file) {
+    if(this.includes.indexOf(file) === -1) this.includes.push(file);
 };
 
 /**
@@ -94,38 +99,59 @@ Process.prototype.reverseScanOnce = function(startModules, filter, callback) {
 
 /** Call #scan, starting with all source modules */
 Process.prototype.scanAll = function(filter, callback) {
-	return this.scan(this.getSourceModules(), filter, callback);
+	return this.scan(this.getSourceModules(filter), filter, callback);
 };
 
 /** Call #reverseScan, starting with all leaf modules */
 Process.prototype.reverseScanAll = function(filter, callback) {
-	return this.reverseScan(this.getLeafModules(), filter, callback);
+	return this.reverseScan(this.getLeafModules(filter), filter, callback);
 };
 
 /** Call #scanOnce, starting with all source modules */
 Process.prototype.scanAllOnce = function(filter, callback) {
-	return this.scanOnce(this.getSourceModules(), filter, callback);
+	return this.scanOnce(this.getSourceModules(filter), filter, callback);
 };
 
 /** Call #reverseScanOnce, starting with all leaf modules */
 Process.prototype.reverseScanAllOnce = function(filter, callback) {
-	return this.reverseScanOnce(this.getLeafModules(), filter, callback);
+	return this.reverseScanOnce(this.getLeafModules(filter), filter, callback);
 };
 
 /** @return all source modules (i.e., modules with no inputs) */
-Process.prototype.getSourceModules = function() {
+Process.prototype.getSourceModules = function(filter) {
 	var sm = [];
-	this.modules.forEach(function(m) { if(m.nbIns()===0) sm.push(m); });
+	this.modules.forEach(function(m) { if(m.nbIns(filter)===0) sm.push(m); });
 	return sm;
 };
 
 /** @return all leaf modules (i.e., modules with no outputs) */
-Process.prototype.getLeafModules = function() {
+Process.prototype.getLeafModules = function(filter) {
 	var sm = [];
-	this.modules.forEach(function(m) { if(m.nbOuts()===0) sm.push(m); });
+	this.modules.forEach(function(m) { if(m.nbOuts(filter)===0) sm.push(m); });
 	return sm;
 };
 
 
+// Index lookup
+
+Process.prototype.computeIncludes = function() {
+    var that = this;
+    this.includes = [];
+    this.modules.forEach(function(m) {
+        var include = IndexLookup.getModuleFile(m.class);
+        if(include) that.addInclude(include);
+    });
+}
+
+Process.prototype.inferLanguage = function() {
+    try {
+        if(this.language) return this.language;
+        if(!this.modules || !this.modules[0]) return null;
+        return this.language = this.modules[0].inferLanguage();
+    } catch(e) {
+        console.error("[Error] " + e);
+        process.exit(-1);
+    }
+}
 
 module.exports = Process;

@@ -26,6 +26,6 @@ module.exports = {
 			if(!this._pinsCache) this._pinsCache = {};
 			return this._pinsCache[moduleClass] = pins;
 		}
-		catch(e) { console.error(e); }
+		catch(e) { }
 	}
 }

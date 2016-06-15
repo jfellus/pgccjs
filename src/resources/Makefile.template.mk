@@ -9,10 +9,9 @@ INCLUDES:=$(addprefix -I, $(INCLUDES))
 
 
 
-all: processes/ $(PROCESSES_BIN)
+all: $(PROCESSES_BIN)
 
-processes/:
-	mkdir -p processes/
 
 processes/%: src/%.cpp
+	@mkdir -p processes/
 	g++ -o $@ $< $(INCLUDES)
