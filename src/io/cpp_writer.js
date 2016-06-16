@@ -54,7 +54,7 @@ CPPWriter.prototype.writeProcess = function(proc, outdir) {
 		// PROCESSING FLOW DIRECTIVES
 		function LINK_DECLARE_IN(l) 	{ if(l.needsInit && l.needsInit())   S("PgccLinkIn _link_"+l.src.id+"_"+l.dst.id); }
 		function LINK_DECLARE_OUT(l) 	{ if(l.needsInit && l.needsInit())   S("PgccLinkOut _link_"+l.src.id+"_"+l.dst.id); }
-		function LINK_INIT(l) 			{ if(l.needsInit && l.needsInit())   CALL("_link_"+l.src.id+"_"+l.dst.id + ".init"); }
+		function LINK_INIT(l) 			{ if(l.needsInit && l.needsInit())   CALL("_link_"+l.src.id+"_"+l.dst.id + ".init", ['"'+l.src.id+"_"+l.dst.id+'"']); }
 		function LINK_UNINIT(l) 		{ if(l.needsInit && l.needsInit())   CALL("_link_"+l.src.id+"_"+l.dst.id + ".destroy"); }
 		function LINK_START_READ(l) 	{ if(l.needsRead && l.needsRead())   CALL("_link_"+l.src.id+"_"+l.dst.id + ".startRead"); }
 		function LINK_END_READ(l) 		{ if(l.needsRead && l.needsRead())   CALL("_link_"+l.src.id+"_"+l.dst.id + ".endRead"); }
@@ -129,7 +129,7 @@ CPPWriter.prototype.writeProcess = function(proc, outdir) {
 		END();
 		W();
 
-		FUNCTION("int", "main", ["char** argv", "int argv"]);
+		FUNCTION("int", "main", ["int argc", "char** argv"]);
 			FOR("int iteration = 0", "", "iteration++");
 				CALL("process");
 			END();
