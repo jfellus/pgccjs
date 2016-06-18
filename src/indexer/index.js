@@ -11,7 +11,7 @@ Index.prototype.append = function(file) {
 	try {
 		var that = this;
 		var f = path.resolve(file);
-		var tags = childProcess.execSync('ctags --fields=+Snl --c++-kinds=+p -f - '+f+' | sed "s/[\\t]/##/g" | grep \'"##f##\\|##p##\'').toString().split("\n").map(function(tag){
+		var tags = childProcess.execSync('ctags --fields=+Snl --c++-kinds=+p -f - '+f+' | sed -e \'s|/^.*$/;"\\t||\' | sed "s/[\\t]/##/g" | grep \'##f##\\|##p##\'').toString().split("\n").map(function(tag){
 			that.addCtagsTag(tag);
 		});
 	} catch(e) {}
@@ -25,19 +25,32 @@ Index.prototype.addCtagsTag = function(tag) {
 		var _tag = {
 			name: tag[0],
 			file: tag[1],
-			line: tag[4].after(":"),
-			lang: tag[5].after(":"),
+			line: tag[3].after(":"),
+			lang: tag[4].after(":"),
 			ret: null,
 			signature: null
 		};
 		if(_tag.lang === 'C++') {
-			_tag.ret = tag[6].after(":").after(":");
-			_tag.signature = tag[7].after(":");
+			if(tag[5].before(':') === 'class') {
+				if(tag[0]==='process') {
+					_tag.name = tag[5].after(':');
+					_tag.ret = tag[6].after(":").after(":");
+					_tag.signature = tag[7].after(":");
+					_tag.lang = 'C++';
+				} else return; 
+			} else {
+				_tag.lang = 'C';
+				_tag.ret = tag[5].after(":").after(":");
+				_tag.signature = tag[6].after(":");
+			}
 		}
 		else if(tag[6]) _tag.signature = tag[6].after(":");
 		this.addCtagsTag(_tag);
 	}
-	else if(tag.name) this.tags.push(tag);
+	else if(tag.name) {
+		console.log(tag);
+		this.tags.push(tag);
+	}
 	else throw 'Unhandled tag type';
 }
 

@@ -83,6 +83,7 @@ CPPWriter.prototype.writeProcess = function(proc, outdir) {
 		}
 
 		function MODULE_CALL(m) {
+			 // TODO lang == C ? -> just call function
 			m.ins.forEach(function(l) { LINK_START_READ(l); });
 			m.outs.forEach(function(l) { LINK_START_WRITE(l); });
 			CALL(m.id + ".process", m.ins.map(function(l) { return l.srcPin ? (l.src.id + "." + l.srcPin) : l.src.id; }));
@@ -108,7 +109,7 @@ CPPWriter.prototype.writeProcess = function(proc, outdir) {
 		proc.scanAllOnce(function(l){return l.isProcedural();}, function(l) {
 			LINK_INIT(l);
 			for(var i in l.dst.params) S(l.dst.id + "." + i + " = " + l.dst.params[i]);
-			CALL(l.dst.id + ".init", []);
+			CALL(l.dst.id + ".init", []); // TODO lang == C ? -> no init !
 		});
 		INIT_EXTERNAL_LINKS();
 		END();
@@ -116,7 +117,7 @@ CPPWriter.prototype.writeProcess = function(proc, outdir) {
 
 		FUNCTION("void", "deinit", []);
 		proc.reverseScanAllOnce(function(l){return l.isProcedural();}, function(l) {
-			CALL(l.src.id + ".deinit", []);
+			CALL(l.src.id + ".deinit", []); // TODO lang == C ? -> no init !
 		});
 		UNINIT_EXTERNAL_LINKS();
 		END();
